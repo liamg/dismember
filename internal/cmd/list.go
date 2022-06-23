@@ -13,10 +13,11 @@ func init() {
 		Short: "List all processes currently available on the system",
 		Long:  ``,
 		RunE:  listHandler,
+		Args:  cobra.ExactArgs(0),
 	})
 }
 
-func listHandler(cmd *cobra.Command, args []string) error {
+func listHandler(cmd *cobra.Command, _ []string) error {
 
 	processes, err := proc.List(true)
 	if err != nil {

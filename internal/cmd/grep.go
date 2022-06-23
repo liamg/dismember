@@ -14,6 +14,7 @@ var flagPID int
 var flagProcessName string
 var flagIncludeSelf bool
 var flagDumpRadius int
+var flagFast bool
 
 func init() {
 
@@ -29,6 +30,7 @@ func init() {
 	grepCmd.Flags().StringVarP(&flagProcessName, "pname", "n", "", "Grep memory of all processes whose name contains this string.")
 	grepCmd.Flags().IntVarP(&flagDumpRadius, "dump-radius", "r", 2, "The number of lines of memory to dump both above and below each match.")
 	grepCmd.Flags().BoolVarP(&flagIncludeSelf, "self", "s", false, "Include results that are matched against the current process, or an ancestor of that process.")
+	grepCmd.Flags().BoolVarP(&flagFast, "fast", "f", false, "Skip mapped files in order to run faster.")
 	rootCmd.AddCommand(grepCmd)
 }
 
@@ -101,8 +103,8 @@ const (
 	ansiReset     = "\x1b[0m"
 	ansiBold      = "\x1b[1m"
 	ansiDim       = "\x1b[2m"
-	ansiUnderline = "\x1b[4m"
 	ansiItalic    = "\x1b[3m"
+	ansiUnderline = "\x1b[4m"
 	ansiRed       = "\x1b[31m"
 	ansiGreen     = "\x1b[32m"
 )
@@ -137,7 +139,7 @@ func hexDump(g GrepResult) string {
 
 	data, err := g.Process.ReadMemory(g.Map, start, size)
 	if err != nil {
-		return fmt.Sprintf("dump not available: %s", err)
+		return fmt.Sprintf("    dump not available: %s", err)
 	}
 
 	literalStartAddr := g.Map.Address + start
