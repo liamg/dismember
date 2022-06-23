@@ -1,0 +1,25 @@
+builds:
+  - id: dismember
+    main: .
+    binary: dismember
+    ldflags:
+      - "-s -w"
+    flags:
+      - "--trimpath"
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - "386"
+      - amd64
+      - arm64
+archives:
+  -
+    format: binary
+    name_template: "{{ .Binary}}-{{ .Os }}-{{ .Arch }}"
+release:
+  prerelease: auto
+  github:
+    owner: liamg
+    name: dismember
