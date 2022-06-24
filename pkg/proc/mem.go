@@ -1,5 +1,6 @@
 package proc
 
+// ReadMemory reads the memory of the process for the given memory Map.
 func (p *Process) ReadMemory(m Map, offset uint64, size uint64) ([]byte, error) {
 	f, err := p.openFile("mem")
 	if err != nil {

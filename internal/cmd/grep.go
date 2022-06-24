@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/liamg/dismember/pkg/secrets"
+
 	"github.com/liamg/dismember/pkg/proc"
 	"github.com/spf13/cobra"
 )
@@ -27,10 +29,10 @@ func init() {
 	}
 
 	grepCmd.Flags().IntVarP(&flagPID, "pid", "p", 0, "PID of the process whose memory should be grepped. Omitting this option will grep the memory of all available processes on the system.")
-	grepCmd.Flags().StringVarP(&flagProcessName, "pname", "n", "", "Grep memory of all processes whose name contains this string.")
+	grepCmd.Flags().StringVarP(&flagProcessName, "process-name", "n", "", "Grep memory of all processes whose name contains this string.")
 	grepCmd.Flags().IntVarP(&flagDumpRadius, "dump-radius", "r", 2, "The number of lines of memory to dump both above and below each match.")
 	grepCmd.Flags().BoolVarP(&flagIncludeSelf, "self", "s", false, "Include results that are matched against the current process, or an ancestor of that process.")
-	grepCmd.Flags().BoolVarP(&flagFast, "fast", "f", false, "Skip mapped files in order to run faster.")
+	grepCmd.Flags().BoolVarP(&flagFast, "fast", "f", false, "Skip memory-mapped files in order to run faster.")
 	rootCmd.AddCommand(grepCmd)
 }
 
@@ -57,6 +59,10 @@ func grepHandler(cmd *cobra.Command, args []string) error {
 	_ = stdErr
 	stdOut := cmd.OutOrStdout()
 
+	pattern := secrets.Pattern{
+		Regex: regex,
+	}
+
 	var total int
 	for _, process := range processes {
 		if flagProcessName != "" {
@@ -68,10 +74,10 @@ func grepHandler(cmd *cobra.Command, args []string) error {
 				continue
 			}
 		}
-		if !flagIncludeSelf && process.IsInHierarchyOf(proc.Self()) {
+		if !flagIncludeSelf && process.IsAncestor(proc.Self()) {
 			continue
 		}
-		results, err := grepProcessMemory(process, regex)
+		results, err := grepProcessMemory(process, pattern)
 		if err != nil {
 			// TODO: add to debug log
 			//_, _ = fmt.Fprintf(stdErr, "failed to access memory for process %d: %s\n", process.PID(), err)
@@ -92,7 +98,7 @@ func grepHandler(cmd *cobra.Command, args []string) error {
 }
 
 type GrepResult struct {
-	Pattern *regexp.Regexp
+	Pattern secrets.Pattern
 	Process proc.Process
 	Map     proc.Map
 	Address uint64
@@ -187,7 +193,7 @@ func asciify(b byte, hl bool) string {
 	return fmt.Sprintf("%s%s%c%s", ansiBold, ansiRed, b, ansiReset)
 }
 
-func grepProcessMemory(p proc.Process, regex *regexp.Regexp) ([]GrepResult, error) {
+func grepProcessMemory(p proc.Process, pattern secrets.Pattern) ([]GrepResult, error) {
 	var results []GrepResult
 	maps, err := p.Maps()
 	if err != nil {
@@ -195,19 +201,25 @@ func grepProcessMemory(p proc.Process, regex *regexp.Regexp) ([]GrepResult, erro
 	}
 	for _, map_ := range maps {
 		if !map_.Permissions.Readable {
+			logger.Log("skipping memory at %X for process %s: memory is not readable", map_.Address, p.String())
+			continue
+		}
+		if flagFast && (map_.Path != "" && map_.Path[0] != '[') {
+			logger.Log("skipping memory at %X for process %s: location is memory-mapped", map_.Address, p.String())
 			continue
 		}
 		memory, err := p.ReadMemory(map_, 0, 0)
 		if err != nil {
+			logger.Log("failed to read memory at %X for process %s: %s", map_.Address, p.String(), err)
 			continue
 		}
-		for _, matches := range regex.FindAllIndex(memory, -1) {
+		for _, matches := range pattern.Regex.FindAllIndex(memory, -1) {
 			results = append(results, GrepResult{
 				Process: p,
 				Map:     map_,
 				Address: map_.Address + uint64(matches[0]),
 				Match:   shrinkMatch(memory[matches[0]:matches[1]]),
-				Pattern: regex,
+				Pattern: pattern,
 			})
 		}
 	}

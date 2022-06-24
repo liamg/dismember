@@ -9,25 +9,31 @@ import (
 	"syscall"
 )
 
+// Process represents a process. The underlying data is the PID.
 type Process uint64
 
 const (
+	// NoProcess is a sentinel value for Process.
 	NoProcess Process = 0
 )
 
+// PID returns the PID of the process.
 func (p *Process) PID() uint64 {
 	return uint64(*p)
 }
 
+// Self returns the Process of the currently running program
 func Self() Process {
 	return Process(os.Getpid())
 }
 
+// Ownership represents the ownership of a process.
 type Ownership struct {
 	UID uint32
 	GID uint32
 }
 
+// Ownership returns the ownership of the process.
 func (p *Process) Ownership() (*Ownership, error) {
 	info, err := os.Stat(fmt.Sprintf("/proc/%d", *p))
 	if err != nil {
@@ -43,6 +49,7 @@ func (p *Process) Ownership() (*Ownership, error) {
 	}, nil
 }
 
+// Name returns the name of the process.
 func (p *Process) Name() string {
 	status, err := p.Status()
 	if err != nil || status.Name == "" {
@@ -51,12 +58,14 @@ func (p *Process) Name() string {
 	return status.Name
 }
 
+// String returns the string representation of the process.
 func (p *Process) String() string {
 	return fmt.Sprintf("%d (%s)", p.PID(), p.Name())
 }
 
 var pidRegex = regexp.MustCompile(`^\d+$`)
 
+// List returns a list of all processes available to the current user.
 func List(includeSelf bool) ([]Process, error) {
 
 	self := os.Getpid()

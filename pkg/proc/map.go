@@ -12,8 +12,10 @@ import (
 // address           perms offset  dev   inode   pathname
 // 08048000-08056000 r-xp 00000000 03:0c 64593   /usr/sbin/gpm
 
+// Maps is a list of memory maps.
 type Maps []Map
 
+// Map is a memory map.
 type Map struct {
 	Address     uint64
 	Size        uint64
@@ -24,6 +26,7 @@ type Map struct {
 	Path        string
 }
 
+// MemPerms represents memory permissions.
 type MemPerms struct {
 	Readable   bool
 	Writable   bool
@@ -31,6 +34,7 @@ type MemPerms struct {
 	Shared     bool
 }
 
+// Maps returns the memory maps of the process.
 func (p *Process) Maps() (Maps, error) {
 	data, err := p.readFile("maps")
 	if err != nil {

@@ -24,13 +24,12 @@ func listHandler(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	stdErr := cmd.ErrOrStderr()
 	stdOut := cmd.OutOrStdout()
 
 	for _, process := range processes {
 		status, err := process.Status()
 		if err != nil {
-			_, _ = fmt.Fprintf(stdErr, "failed to read status for process %d: %s\n", process.PID(), err)
+			logger.Log("failed to determine status for process %s: %s", process, err)
 			continue
 		}
 		_, _ = fmt.Fprintf(stdOut, "% -10d %s\n", process.PID(), status.Name)
