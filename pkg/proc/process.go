@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"syscall"
 )
 
 type Process uint64
@@ -20,6 +21,26 @@ func (p *Process) PID() uint64 {
 
 func Self() Process {
 	return Process(os.Getpid())
+}
+
+type Ownership struct {
+	UID uint32
+	GID uint32
+}
+
+func (p *Process) Ownership() (*Ownership, error) {
+	info, err := os.Stat(fmt.Sprintf("/proc/%d", *p))
+	if err != nil {
+		return nil, err
+	}
+	stat, ok := info.Sys().(*syscall.Stat_t)
+	if !ok {
+		return nil, fmt.Errorf("stat syscall returned unexpected data: %#v", info.Sys())
+	}
+	return &Ownership{
+		UID: stat.Uid,
+		GID: stat.Gid,
+	}, nil
 }
 
 func (p *Process) Name() string {

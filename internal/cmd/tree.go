@@ -5,6 +5,7 @@ import (
 	"github.com/liamg/dismember/pkg/proc"
 	"github.com/spf13/cobra"
 	"io"
+	"os"
 )
 
 func init() {
@@ -54,11 +55,12 @@ func treeHandler(cmd *cobra.Command, _ []string) error {
 		})
 	}
 
-	drawBranch(cmd.OutOrStdout(), rootWithStatus, nil, all)
+	uid := os.Getuid()
+	drawBranch(cmd.OutOrStdout(), rootWithStatus, "", true, all, uid)
 	return nil
 }
 
-func drawBranch(w io.Writer, parent procWithStatus, lasts []bool, all []procWithStatus) {
+func drawBranch(w io.Writer, parent procWithStatus, prefix string, last bool, all []procWithStatus, uid int) {
 
 	var children []procWithStatus
 	for _, process := range all {
@@ -68,33 +70,30 @@ func drawBranch(w io.Writer, parent procWithStatus, lasts []bool, all []procWith
 		children = append(children, process)
 	}
 
-	var done bool
-	_, _ = fmt.Fprint(w, ansiDim)
-	if len(lasts) > 1 {
-		for _, last := range lasts[1:] {
-			if !last {
-				_, _ = fmt.Fprint(w, " │ ")
-			} else if !done {
-				done = true
-				_, _ = fmt.Fprint(w, " │ ")
-			} else {
-				_, _ = fmt.Fprint(w, "   ")
-			}
-		}
-	}
-
-	if len(lasts) > 0 {
+	_, _ = fmt.Print(ansiDim + prefix)
+	if prefix != "" {
 		symbol := '├'
-		if lasts[len(lasts)-1] {
+		if last {
 			symbol = '└'
 		}
 		_, _ = fmt.Fprintf(w, " %c─ ", symbol)
 	}
 
 	_, _ = fmt.Fprint(w, ansiReset)
+	//owner, err := parent.process.Ownership()
+	//if err != nil {
+	//
+	//}
 	_, _ = fmt.Fprintf(w, "%s %s(%s%d%s)%s\n", parent.status.Name, ansiDim, ansiReset, parent.process, ansiDim, ansiReset)
+	_, _ = fmt.Fprint(w, ansiReset)
+
+	if last {
+		prefix += "   "
+	} else {
+		prefix += " │ "
+	}
 
 	for i, child := range children {
-		drawBranch(w, child, append(lasts, i == len(children)-1), all)
+		drawBranch(w, child, prefix, i == len(children)-1, all)
 	}
 }
