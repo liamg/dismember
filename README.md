@@ -29,7 +29,7 @@ Commands are also included to list processes, explore process status and related
 | `find`    | Find a PID given a process name. If multiple processes match, the first one is returned. |
 | `info`    | Show information about a process                                                         |
 | `kernel`  | Show information about the kernel                                                        | 
-| `kill`    | Kill a process using SIGKILL                                                             | 
+| `kill`    | Kill a process (or processes) using SIGKILL                                              | 
 | `list`    | List all processes currently available on the system                                     | 
 | `resume`  | Resume a suspended process using SIGCONT                                                 | 
 | `suspend` | Suspend a process using SIGSTOP (use 'dismember resume' to leave suspension)             | 
