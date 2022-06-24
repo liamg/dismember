@@ -63,7 +63,9 @@ dismember scan
 ## FAQ
 
 > Isn't this information all just sitting in `/proc`?
+
 Pretty much. Dismember just reads and presents it for the most part. If you can get away with `grep whatever /proc/[pid]/blah` then go for it! I built this as an educational experience because I couldn't sleep one night and stayed up late reading the `proc` man-pages (I live an extremely rock 'n' roll lifestyle). It's not a replacement for existing tools, but perhaps it can complement them.
 
 > Do you know how horrific some of these commands seem when read out of context?
-Yes, I realised after running `dismember kill --children 291458` and grimacing as I looked back at the command. Oops.
+
+[Yes](https://twitter.com/liam_galvin/status/1540375769049960448).
