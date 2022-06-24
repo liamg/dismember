@@ -1,8 +1,8 @@
 # Dismember
 
-Dismember is a command-line toolkit for Linux that can be used to explore processes and (especially) their memory. Essentially for playing with `/proc`.
+Dismember is a command-line toolkit for Linux that can be used to scan the memory of all processes (or particular ones) for common secrets and custom regular expressions, among other things.
 
-One core feature is the ability to scan the memory of all processes for common secrets, or for custom regular expressions.
+It will eventually become a full `/proc` toolkit.
 
 ![A gif showing dismember finding credentials from the memory of a browser](demo.gif)
 
@@ -14,19 +14,24 @@ Dismember can be used to search memory of all processes it has access to, so run
 
 Commands are also included to list processes, explore process status and related information, draw process trees, and more...
 
-## Available Commands
+## Main Commands
+
+| Command   | Description                                                                              | 
+|-----------|------------------------------------------------------------------------------------------|
+| `grep`    | Search process memory for a given string or regex                                        |
+| `scan`    | Search process memory for a set of predefined secret patterns                            | 
+
+## Utility Commands
 
 | Command   | Description                                                                              | 
 |-----------|------------------------------------------------------------------------------------------|
 | `files`   | Show a list of files being accessed by a process                                         |
 | `find`    | Find a PID given a process name. If multiple processes match, the first one is returned. |
-| `grep`    | Search process memory for a given string or regex                                        |
 | `info`    | Show information about a process                                                         |
 | `kernel`  | Show information about the kernel                                                        | 
 | `kill`    | Kill a process using SIGKILL                                                             | 
 | `list`    | List all processes currently available on the system                                     | 
 | `resume`  | Resume a suspended process using SIGCONT                                                 | 
-| `scan`    | Search process memory for a set of predefined secret patterns                            | 
 | `suspend` | Suspend a process using SIGSTOP (use 'dismember resume' to leave suspension)             | 
 | `tree`    | Show a tree diagram of a process and all children (defaults to PID 1).                   | 
 
