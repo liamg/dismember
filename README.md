@@ -1,4 +1,4 @@
-# Dismember
+# :hocho: Dismember
 
 Dismember is a command-line toolkit for Linux that can be used to scan the memory of all processes (or particular ones) for common secrets and custom regular expressions, among other things.
 
